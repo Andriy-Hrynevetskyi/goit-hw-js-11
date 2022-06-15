@@ -42,7 +42,8 @@ function createImagesListMarkup(images) {
 function onFormSubmit(event) {
   event.preventDefault();
 
-  imagesAPIService.query = event.currentTarget.elements.searchQuery.value;
+  imagesAPIService.query =
+    event.currentTarget.elements.searchQuery.value.trim();
   imagesAPIService.resetPage();
 
   imagesAPIService.fetchImages().then(images => {
@@ -51,18 +52,18 @@ function onFormSubmit(event) {
     refs.gallery.innerHTML = '';
     refs.gallery.insertAdjacentHTML(
       'beforeend',
-      createImagesListMarkup(images.data.hits)
+      createImagesListMarkup(images)
     );
   });
 }
 
-function onLoadMore(event) {
+function onLoadMore() {
   imagesAPIService.fetchImages().then(images => {
     imagesAPIService.increasePage();
 
     refs.gallery.insertAdjacentHTML(
       'beforeend',
-      createImagesListMarkup(images.data.hits)
+      createImagesListMarkup(images)
     );
   });
 }
