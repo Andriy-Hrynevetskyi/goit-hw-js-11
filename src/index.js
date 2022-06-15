@@ -1,72 +1,68 @@
-import axios from 'axios';
+import ImagesAPIService from './js/images-api-service';
 
 const refs = {
   form: document.querySelector('#search-form'),
   submitBtn: document.querySelector('button'),
   gallery: document.querySelector('.gallery'),
+  loadMoreBtn: document.querySelector('.load-more'),
 };
 
-const BASE_URL = 'https://pixabay.com/api/';
+const imagesAPIService = new ImagesAPIService();
 
-const searchParams = new URLSearchParams({
-  key: '28043383-13411f478fe95414de8ce4565',
-  image_type: 'photo',
-  orientation: 'horizontal',
-  safesearch: 'true',
-});
-
-function getImages(userQuery) {
-  return axios.get(`${BASE_URL}?${searchParams}&q=${userQuery}`);
-}
+refs.form.addEventListener('submit', onFormSubmit);
+refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 function createCardMarkup(image) {
   let { webformatURL, largeImageURL, tags, likes, views, comments, downloads } =
     image;
-  return `<div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-  <div class="info">
-    <p class="info-item">
-      <b>Likes: ${likes}</b>
+  return `<div class="gallery__item">
+  <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
+  <div class="image-info">
+    <p class="image-info__item">
+      Likes: ${likes}
     </p>
     <p class="info-item">
-      <b>Vievs: ${views}</b>
+      Views: ${views}
     </p>
     <p class="info-item">
-      <b>Comments: ${comments}</b>
+      Comments: ${comments}
     </p>
     <p class="info-item">
-      <b>Downloads: ${downloads}</b>
+      Downloads: ${downloads}
     </p>
   </div>
 </div>
 `;
 }
 
-function renderImages(images) {
+function createImagesListMarkup(images) {
   return images.map(createCardMarkup).join('');
 }
 
 function onFormSubmit(event) {
   event.preventDefault();
 
-  let userQuery = event.currentTarget.elements.searchQuery.value;
+  imagesAPIService.query = event.currentTarget.elements.searchQuery.value;
+  imagesAPIService.resetPage();
 
-  getImages(userQuery).then(images => {
+  imagesAPIService.fetchImages().then(images => {
+    imagesAPIService.increasePage();
+
     refs.gallery.innerHTML = '';
     refs.gallery.insertAdjacentHTML(
       'beforeend',
-      renderImages(images.data.hits)
+      createImagesListMarkup(images.data.hits)
     );
   });
 }
 
-refs.form.addEventListener('submit', onFormSubmit);
+function onLoadMore(event) {
+  imagesAPIService.fetchImages().then(images => {
+    imagesAPIService.increasePage();
 
-//  Object fields
-// webformatURL - посилання на маленьке зображення для списку карток.
-// largeImageURL - посилання на велике зображення.
-// tags - рядок з описом зображення. Підійде для атрибуту alt.
-// likes - кількість лайків.
-// views - кількість переглядів.
-// comments - кількість коментарів.
-// downloads - кількість завантажень.
+    refs.gallery.insertAdjacentHTML(
+      'beforeend',
+      createImagesListMarkup(images.data.hits)
+    );
+  });
+}
