@@ -11,12 +11,18 @@ const refs = {
   gallery: document.querySelector('.gallery'),
 };
 
+const MAX_LIMIT_RICHED_MSG =
+  "We're sorry, but you've reached the end of search results.";
+const BAD_REQUEST_MSG =
+  'Sorry, there are no images matching your search query. Please try again.';
+const ERROR_MSG = 'An error occurred!!!!';
+
 const imagesAPIService = new ImagesAPIService();
 
 let infScroll = new InfiniteScroll(refs.gallery, {
   loadOnScroll: false,
   history: false,
-  scrollThreshold: 100,
+  scrollThreshold: 200,
   path: function () {
     let pageNumber = this.loadCount + 1;
     let url = imagesAPIService.returnURLForInfScroll();
@@ -26,7 +32,7 @@ let infScroll = new InfiniteScroll(refs.gallery, {
 
 let simplelightbox = new SimpleLightbox('.gallery a');
 
-infScroll.on('scrollThreshold', debounce(onLoadMore, 350));
+infScroll.on('scrollThreshold', debounce(onLoadMore, 400));
 
 refs.form.addEventListener('submit', onFormSubmit);
 
@@ -57,24 +63,6 @@ function createImagesListMarkup(images) {
   return images.map(createCardMarkup).join('');
 }
 
-function onFormSubmit(event) {
-  event.preventDefault();
-
-  imagesAPIService.query =
-    event.currentTarget.elements.searchQuery.value.trim();
-
-  imagesAPIService.resetPage();
-
-  imagesAPIService.fetchImages().then(images => {
-    refs.gallery.innerHTML = '';
-    refs.gallery.insertAdjacentHTML(
-      'beforeend',
-      createImagesListMarkup(images)
-    );
-    simplelightbox.refresh();
-  });
-}
-
 function smoothScroll() {
   const { height: cardHeight } = document
     .querySelector('.gallery')
@@ -86,15 +74,57 @@ function smoothScroll() {
   });
 }
 
-function onLoadMore() {
+function clearGallery() {
+  refs.gallery.innerHTML = '';
+}
+
+function renderGallery(images) {
+  refs.gallery.insertAdjacentHTML('beforeend', createImagesListMarkup(images));
+}
+
+function showSuccessMsg(quantity) {
+  let message = `"Hooray! We found ${quantity} images."`;
+  return Notify.success(message);
+}
+
+function showErrorMsg(message) {
+  return Notify.failure(message);
+}
+
+async function onFormSubmit(event) {
+  event.preventDefault();
+
+  imagesAPIService.query =
+    event.currentTarget.elements.searchQuery.value.trim();
+
+  imagesAPIService.resetPage();
+  clearGallery();
+
+  const images = await imagesAPIService.fetchImages();
+  let { totalHits, hits } = images;
+  if (totalHits === 0) {
+    Notify.failure(BAD_REQUEST_MSG);
+    return;
+  }
+  showSuccessMsg(totalHits);
+  renderGallery(hits);
+  simplelightbox.refresh();
+}
+
+async function onLoadMore() {
   imagesAPIService.increasePage();
 
-  imagesAPIService.fetchImages().then(images => {
-    refs.gallery.insertAdjacentHTML(
-      'beforeend',
-      createImagesListMarkup(images)
-    );
+  try {
+    const images = await imagesAPIService.fetchImages();
+    let { hits } = images;
+    renderGallery(hits);
     simplelightbox.refresh();
     smoothScroll();
-  });
+  } catch (error) {
+    if (error.response.status === 400) {
+      showErrorMsg(MAX_LIMIT_RICHED_MSG);
+    } else {
+      showErrorMsg(ERROR_MSG);
+    }
+  }
 }

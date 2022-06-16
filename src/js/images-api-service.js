@@ -15,13 +15,11 @@ export default class ImagesAPIService {
     this.searchQuery = '';
     this.page = 1;
   }
-
-  fetchImages() {
-    return axios
-      .get(
-        `${BASE_URL}?q=${this.searchQuery}&${searchParams}&page=${this.page}`
-      )
-      .then(images => images.data.hits);
+  async fetchImages() {
+    const images = await axios.get(
+      `${BASE_URL}?q=${this.searchQuery}&${searchParams}&page=${this.page}`
+    );
+    return images.data;
   }
 
   get query() {
@@ -37,7 +35,7 @@ export default class ImagesAPIService {
   }
 
   resetPage() {
-    this.page = 1;
+    this.page = 12;
   }
 
   returnURLForInfScroll() {
