@@ -3,6 +3,7 @@ import InfiniteScroll from 'infinite-scroll';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import debounce from 'lodash.debounce';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -25,7 +26,7 @@ let infScroll = new InfiniteScroll(refs.gallery, {
 
 let simplelightbox = new SimpleLightbox('.gallery a');
 
-infScroll.on('scrollThreshold', debounce(onLoadMore, 400));
+infScroll.on('scrollThreshold', debounce(onLoadMore, 350));
 
 refs.form.addEventListener('submit', onFormSubmit);
 
@@ -61,6 +62,7 @@ function onFormSubmit(event) {
 
   imagesAPIService.query =
     event.currentTarget.elements.searchQuery.value.trim();
+
   imagesAPIService.resetPage();
 
   imagesAPIService.fetchImages().then(images => {
