@@ -2,6 +2,7 @@ import ImagesAPIService from './js/images-api-service';
 import InfiniteScroll from 'infinite-scroll';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import debounce from 'lodash.debounce';
 
 const refs = {
   form: document.querySelector('#search-form'),
@@ -14,7 +15,7 @@ const imagesAPIService = new ImagesAPIService();
 let infScroll = new InfiniteScroll(refs.gallery, {
   loadOnScroll: false,
   history: false,
-  scrollThreshold: 400,
+  scrollThreshold: 100,
   path: function () {
     let pageNumber = this.loadCount + 1;
     let url = imagesAPIService.returnURLForInfScroll();
@@ -22,7 +23,9 @@ let infScroll = new InfiniteScroll(refs.gallery, {
   },
 });
 
-infScroll.on('scrollThreshold', onLoadMore);
+let simplelightbox = new SimpleLightbox('.gallery a');
+
+infScroll.on('scrollThreshold', debounce(onLoadMore, 400));
 
 refs.form.addEventListener('submit', onFormSubmit);
 
@@ -67,12 +70,19 @@ function onFormSubmit(event) {
       createImagesListMarkup(images)
     );
     simplelightbox.refresh();
-    console.log('log on submit', simplelightbox);
   });
 }
 
-let simplelightbox = new SimpleLightbox('.gallery a');
-console.log(simplelightbox);
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
 
 function onLoadMore() {
   imagesAPIService.increasePage();
@@ -83,6 +93,6 @@ function onLoadMore() {
       createImagesListMarkup(images)
     );
     simplelightbox.refresh();
-    console.log('log onLoadMore', simplelightbox);
+    smoothScroll();
   });
 }
