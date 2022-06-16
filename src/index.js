@@ -1,21 +1,35 @@
 import ImagesAPIService from './js/images-api-service';
+import InfiniteScroll from 'infinite-scroll';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const refs = {
   form: document.querySelector('#search-form'),
   submitBtn: document.querySelector('button'),
   gallery: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('.load-more'),
 };
 
 const imagesAPIService = new ImagesAPIService();
 
+let infScroll = new InfiniteScroll(refs.gallery, {
+  loadOnScroll: false,
+  history: false,
+  scrollThreshold: 400,
+  path: function () {
+    let pageNumber = this.loadCount + 1;
+    let url = imagesAPIService.returnURLForInfScroll();
+    return `${url}${pageNumber}`;
+  },
+});
+
+infScroll.on('scrollThreshold', onLoadMore);
+
 refs.form.addEventListener('submit', onFormSubmit);
-refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 function createCardMarkup(image) {
   let { webformatURL, largeImageURL, tags, likes, views, comments, downloads } =
     image;
-  return `<div class="gallery__item">
+  return `<a href=${largeImageURL} class="gallery__item">
   <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
   <div class="image-info">
     <p class="image-info__item">
@@ -31,7 +45,7 @@ function createCardMarkup(image) {
       Downloads: ${downloads}
     </p>
   </div>
-</div>
+</a>
 `;
 }
 
@@ -47,23 +61,28 @@ function onFormSubmit(event) {
   imagesAPIService.resetPage();
 
   imagesAPIService.fetchImages().then(images => {
-    imagesAPIService.increasePage();
-
     refs.gallery.innerHTML = '';
     refs.gallery.insertAdjacentHTML(
       'beforeend',
       createImagesListMarkup(images)
     );
+    simplelightbox.refresh();
+    console.log('log on submit', simplelightbox);
   });
 }
 
-function onLoadMore() {
-  imagesAPIService.fetchImages().then(images => {
-    imagesAPIService.increasePage();
+let simplelightbox = new SimpleLightbox('.gallery a');
+console.log(simplelightbox);
 
+function onLoadMore() {
+  imagesAPIService.increasePage();
+
+  imagesAPIService.fetchImages().then(images => {
     refs.gallery.insertAdjacentHTML(
       'beforeend',
       createImagesListMarkup(images)
     );
+    simplelightbox.refresh();
+    console.log('log onLoadMore', simplelightbox);
   });
 }

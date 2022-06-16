@@ -1,5 +1,15 @@
 import axios from 'axios';
 
+const searchParams = new URLSearchParams({
+  key: '28043383-13411f478fe95414de8ce4565',
+  image_type: 'photo',
+  orientation: 'horizontal',
+  safesearch: 'true',
+  per_page: 40,
+});
+
+const BASE_URL = 'https://pixabay.com/api/';
+
 export default class ImagesAPIService {
   constructor() {
     this.searchQuery = '';
@@ -7,16 +17,6 @@ export default class ImagesAPIService {
   }
 
   fetchImages() {
-    const searchParams = new URLSearchParams({
-      key: '28043383-13411f478fe95414de8ce4565',
-      image_type: 'photo',
-      orientation: 'horizontal',
-      safesearch: 'true',
-      per_page: 3,
-    });
-
-    const BASE_URL = 'https://pixabay.com/api/';
-
     return axios
       .get(
         `${BASE_URL}?q=${this.searchQuery}&${searchParams}&page=${this.page}`
@@ -38,5 +38,9 @@ export default class ImagesAPIService {
 
   resetPage() {
     this.page = 1;
+  }
+
+  returnURLForInfScroll() {
+    return `${BASE_URL}?q=${this.searchQuery}&${searchParams}&page=`;
   }
 }
