@@ -9,25 +9,45 @@
 }
 
 .search-form {
+  width: 100%;
+  padding: 10px;
   display: flex;
   justify-content: center;
-  max-width: 400px;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 20px;
+  background-color: #1e90ff;
 }
 
 .search-form > button {
   display: flex;
   align-items: center;
   padding: 5px;
+  border-radius: 4px;
+  border: none;
+  background-color: #fff;
 }
 
 .search-form input {
-  width: 100%;
+  width: 300px;
   padding: 10px;
   line-height: 1.5;
   margin-right: 5px;
+  border-radius: 4px;
+}
+
+.search-form > button {
+  font-size: 20px;
+  font-weight: 500;
+  transition: transform var(--animation-duration) var(--timing-function);
+}
+
+.search-form > button:hover,
+.search-form > button:focus {
+  background-color: #0a6ccc;
+  color: #fff;
+  cursor: pointer;
+  transform: scale(1.03);
 }
 
 .pixabay-logo {
@@ -81,4 +101,96 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+}
+
+.loader-wheel {
+  font-size: 64px; /* change size here */
+  position: relative;
+  height: 1em;
+  width: 1em;
+  padding-left: 0.45em;
+  overflow: hidden;
+  margin: 0 auto;
+  animation: loader-wheel-rotate 0.5s steps(12) infinite;
+}
+// Loading animation
+
+.loader-ellips {
+  font-size: 40px; /* change size here */
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4em;
+  height: 1em;
+  margin: 10px auto;
+  z-index: 100;
+}
+
+.loader-ellips__dot {
+  display: block;
+  bottom: 20px;
+  width: 1em;
+  height: 1em;
+  border-radius: 0.5em;
+  background: #1e90ff; /* change color here */
+  position: absolute;
+  animation-duration: 0.5s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+}
+
+.loader-ellips__dot:nth-child(1),
+.loader-ellips__dot:nth-child(2) {
+  left: 0;
+}
+.loader-ellips__dot:nth-child(3) {
+  left: 1.5em;
+}
+.loader-ellips__dot:nth-child(4) {
+  left: 3em;
+}
+
+@keyframes reveal {
+  from {
+    transform: scale(0.001);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes slide {
+  to {
+    transform: translateX(1.5em);
+  }
+}
+
+.loader-ellips__dot:nth-child(1) {
+  animation-name: reveal;
+}
+
+.loader-ellips__dot:nth-child(2),
+.loader-ellips__dot:nth-child(3) {
+  animation-name: slide;
+}
+
+.loader-ellips__dot:nth-child(4) {
+  animation-name: reveal;
+  animation-direction: reverse;
+}
+
+// Hide animation
+
+.hidden {
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  margin: -1px;
 }

@@ -19,7 +19,7 @@ export default class ImagesAPIService {
     const images = await axios.get(
       `${BASE_URL}?q=${this.searchQuery}&${searchParams}&page=${this.page}`
     );
-    return images.data;
+    return images;
   }
 
   get query() {
@@ -35,7 +35,7 @@ export default class ImagesAPIService {
   }
 
   resetPage() {
-    this.page = 12;
+    this.page = 1;
   }
 
   returnURLForInfScroll() {
