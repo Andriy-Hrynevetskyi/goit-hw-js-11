@@ -35,7 +35,7 @@ export default class ImagesAPIService {
   }
 
   resetPage() {
-    this.page = 1;
+    this.page = 12;
   }
 
   returnURLForInfScroll() {

@@ -108,9 +108,12 @@ async function onFormSubmit(event) {
 
     const images = await imagesAPIService.fetchImages();
     let { totalHits, hits } = images.data;
-    if (hits.length === 0 || totalHits === 0) {
+    if (hits.length === 0 || totalHits === 0 || imagesAPIService.query === '') {
       showErrorMsg(BAD_REQUEST_MSG);
       return;
+    }
+    if (hits.length < 40) {
+      infScroll.off('scrollThreshold', infiniteScrollListener);
     }
     showSuccessMsg(totalHits);
     renderGallery(hits);
@@ -122,6 +125,7 @@ async function onFormSubmit(event) {
   }
 }
 
+// LOAD MORE
 async function loadMore() {
   imagesAPIService.increasePage();
   refs.animation.classList.remove('hidden');
@@ -130,27 +134,19 @@ async function loadMore() {
     const images = await imagesAPIService.fetchImages();
     let { hits } = images.data;
 
-    if (images.data.hits.length === 0 && images.status === 200) {
-      showErrorMsg(MAX_LIMIT_RICHED_MSG);
+    if (hits.length < 40) {
       infScroll.off('scrollThreshold', infiniteScrollListener);
-
-      return;
+      showErrorMsg(MAX_LIMIT_RICHED_MSG);
     }
 
     renderGallery(hits);
     simplelightbox.refresh();
     smoothScroll();
   } catch (error) {
-    if (error.response.status === 400) {
-      showErrorMsg(MAX_LIMIT_RICHED_MSG);
-      infScroll.off('scrollThreshold', infiniteScrollListener);
-      return;
-    } else {
-      showErrorMsg(ERROR_MSG);
-      infScroll.off('scrollThreshold', infiniteScrollListener);
+    showErrorMsg(ERROR_MSG);
+    infScroll.off('scrollThreshold', infiniteScrollListener);
 
-      return;
-    }
+    return;
   } finally {
     refs.animation.classList.add('hidden');
   }
