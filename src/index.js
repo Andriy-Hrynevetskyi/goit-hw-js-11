@@ -139,7 +139,7 @@ async function onFormSubmit(event) {
   }
 }
 
-//LOAD MORE
+//INFINITE SCROLL (LOAD MORE);
 
 async function loadMore() {
   refs.animation.classList.remove('hidden');
