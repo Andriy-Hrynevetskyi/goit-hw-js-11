@@ -14,6 +14,7 @@ export default class ImagesAPIService {
   constructor() {
     this.searchQuery = '';
     this.page = 1;
+    this.imagesLoaded = 0;
   }
   async fetchImages() {
     const images = await axios.get(
@@ -35,7 +36,7 @@ export default class ImagesAPIService {
   }
 
   resetPage() {
-    this.page = 12;
+    this.page = 1;
   }
 
   returnURLForInfScroll() {

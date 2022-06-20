@@ -93,28 +93,42 @@ function showErrorMsg(message) {
 
 const infiniteScrollListener = debounce(loadMore, 400);
 
+//FORM SUBMIT
+
 async function onFormSubmit(event) {
   event.preventDefault();
+
   infScroll.on('scrollThreshold', infiniteScrollListener);
 
   imagesAPIService.query =
     event.currentTarget.elements.searchQuery.value.trim();
 
   imagesAPIService.resetPage();
+
   clearGallery();
 
+  if (imagesAPIService.query === '') {
+    showErrorMsg(BAD_REQUEST_MSG);
+    return;
+  }
   try {
     refs.animation.classList.remove('hidden');
-
+    // Request
     const images = await imagesAPIService.fetchImages();
+
     let { totalHits, hits } = images.data;
-    if (hits.length === 0 || totalHits === 0 || imagesAPIService.query === '') {
+
+    if (hits.length === 0 || totalHits === 0) {
       showErrorMsg(BAD_REQUEST_MSG);
       return;
     }
-    if (hits.length < 40) {
+    imagesAPIService.imagesLoaded = hits.length;
+
+    if (imagesAPIService.imagesLoaded >= totalHits) {
+      showErrorMsg(MAX_LIMIT_RICHED_MSG);
       infScroll.off('scrollThreshold', infiniteScrollListener);
     }
+
     showSuccessMsg(totalHits);
     renderGallery(hits);
     simplelightbox.refresh();
@@ -125,28 +139,31 @@ async function onFormSubmit(event) {
   }
 }
 
-// LOAD MORE
+//LOAD MORE
+
 async function loadMore() {
-  imagesAPIService.increasePage();
   refs.animation.classList.remove('hidden');
 
   try {
+    imagesAPIService.increasePage();
+    // Request
     const images = await imagesAPIService.fetchImages();
-    let { hits } = images.data;
 
-    if (hits.length < 40) {
-      infScroll.off('scrollThreshold', infiniteScrollListener);
+    let { hits, totalHits } = images.data;
+
+    imagesAPIService.imagesLoaded += hits.length;
+
+    if (imagesAPIService.imagesLoaded >= totalHits) {
       showErrorMsg(MAX_LIMIT_RICHED_MSG);
+      infScroll.off('scrollThreshold', infiniteScrollListener);
     }
 
     renderGallery(hits);
     simplelightbox.refresh();
     smoothScroll();
-  } catch (error) {
+  } catch {
     showErrorMsg(ERROR_MSG);
     infScroll.off('scrollThreshold', infiniteScrollListener);
-
-    return;
   } finally {
     refs.animation.classList.add('hidden');
   }
